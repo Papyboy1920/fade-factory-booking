@@ -7,7 +7,7 @@
 // Men $35 · Corte+Barba $40 · Corte+Barba+Cejas $45 · Niños $25.
 // ============================================================
 
-const CATALOG_VERSION = 2;
+const CATALOG_VERSION = 3;
 
 const SEED_CATALOG = {
   departments: [
@@ -23,7 +23,18 @@ const SEED_CATALOG = {
     {
       id: "kids", name: "Kids", nameEs: "Niños", img: "", categories: [
         { id: "kids-main", name: "Kids", items: [
-          { id: "kids-haircut", name: "Kids Haircut", nameEs: "Corte de niños", price: 25, mins: 40, unit: "service", desc: "By appointment", img: "", active: true }
+          { id: "kids-haircut", name: "Kids Haircut", nameEs: "Corte de niños", price: 25, mins: 40, unit: "service", desc: "By appointment", img: "", active: true },
+          { id: "kids-fade", name: "Kids Fade", nameEs: "Fade de niños", price: 25, mins: 40, unit: "service", desc: "", img: "", active: true }
+        ] }
+      ]
+    },
+    {
+      id: "tapes", name: "Tapes & Designs", nameEs: "Delineados y diseños", img: "", categories: [
+        { id: "tapes-main", name: "Tapes & Designs", items: [
+          { id: "tape", name: "Tape (Line-Up)", nameEs: "Delineado (tape)", price: 12, mins: 30, unit: "service", desc: "", img: "", active: true },
+          { id: "tape-beard", name: "Tape + Beard", nameEs: "Delineado + barba", price: 20, mins: 45, unit: "service", desc: "", img: "", active: true },
+          { id: "tape-beard-brows", name: "Tape + Beard + Eyebrows", nameEs: "Delineado + barba + cejas", price: 25, mins: 50, unit: "service", desc: "", img: "", active: true },
+          { id: "designs", name: "Designs", nameEs: "Diseños", price: 0, mins: 30, unit: "service", desc: "Price set at the chair — every design is different", img: "", active: true }
         ] }
       ]
     }
