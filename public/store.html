@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fade Factory — Back Office</title>
+<style>
+  :root{ --bg:#0c0c0e; --panel:#17171b; --line:#2c2c33; --txt:#f2ead8; --gold:#c4a55c; --gold2:#967634;
+         --ok:#57c46a; --bad:#e05c52; --warn:#e8b93e; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--txt); padding:16px 12px 60px;}
+  .wrap{max-width:860px; margin:0 auto;}
+  header{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  header img{width:52px; height:52px; border-radius:50%; background:#f8f6ea; object-fit:contain;}
+  h1{font-size:19px; letter-spacing:2px; color:var(--gold);}
+  header small{display:block; color:#9a917e; letter-spacing:1px; font-size:11px; margin-top:2px;}
+  .live{margin-left:auto; font-size:12px; color:#9a917e;}
+  .live b{color:var(--ok);}
+  .tabs{display:flex; gap:8px; margin:10px 0 16px;}
+  .tab{flex:1; padding:11px; text-align:center; background:var(--panel); border:1px solid var(--line);
+       border-radius:9px; cursor:pointer; font-size:14px; letter-spacing:1px;}
+  .tab.sel{border-color:var(--gold); color:var(--gold);}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px;}
+  .bkg{border-left:4px solid var(--gold2);}
+  .bkg .top{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+  .bkg .num{color:var(--gold); font-weight:bold;}
+  .bkg .svc{font-size:16px; font-weight:600;}
+  .bkg .meta{color:#cbbf9f; font-size:14px; margin-top:3px; line-height:1.5;}
+  .bkg .notes{font-style:italic; color:#9a917e; font-size:13px; margin-top:4px;}
+  .badge{font-size:11px; letter-spacing:1px; padding:3px 9px; border-radius:10px; border:1px solid;}
+  .st-pending{color:var(--warn); border-color:var(--warn);}
+  .st-confirmed{color:var(--ok); border-color:var(--ok);}
+  .st-done{color:#8ab4ff; border-color:#8ab4ff;}
+  .st-cancelled,.st-no-show{color:var(--bad); border-color:var(--bad);}
+  .actions{display:flex; gap:7px; flex-wrap:wrap; margin-top:10px;}
+  button.act{border:1px solid var(--line); background:#22222a; color:var(--txt); border-radius:8px;
+             padding:8px 12px; font-size:13px; cursor:pointer;}
+  button.act:hover{border-color:var(--gold);}
+  button.act.primary{background:var(--gold2); border-color:var(--gold2); color:#fff;}
+  button.act.danger:hover{border-color:var(--bad); color:var(--bad);}
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .filters input,.filters select{background:var(--panel); color:var(--txt); border:1px solid var(--line);
+    border-radius:8px; padding:9px; font-size:14px;}
+  input[type="text"],input[type="tel"],input[type="password"],input[type="number"],textarea,select{
+    background:#101014; color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:14px; width:100%;}
+  label{display:block; font-size:12px; letter-spacing:1px; color:var(--gold); margin:12px 0 5px; text-transform:uppercase;}
+  .row{display:flex; gap:8px; align-items:center;}
+  .row > *{flex:1;}
+  .itemrow{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
+  .itemrow .nm{flex:3;} .itemrow .pr{flex:1;} 
+  .itemrow input[type="checkbox"]{width:20px; height:20px; flex:none;}
+  .deptname{color:var(--gold); letter-spacing:2px; font-size:13px; margin:16px 0 8px; text-transform:uppercase;}
+  .bigbtn{width:100%; background:var(--gold2); color:#fff; border:none; border-radius:9px; padding:13px;
+          font-size:15px; letter-spacing:1px; cursor:pointer; margin-top:14px;}
+  .msg{text-align:center; font-size:14px; margin-top:10px; min-height:18px;}
+  .err{color:var(--bad);} .okmsg{color:var(--ok);}
+  .hidden{display:none;}
+  .days{display:flex; gap:6px; flex-wrap:wrap;}
+  .day{border:1px solid var(--line); border-radius:16px; padding:7px 13px; cursor:pointer; font-size:13px;}
+  .day.sel{background:var(--gold2); border-color:var(--gold2); color:#fff;}
+  #gate{max-width:420px; margin:70px auto; text-align:center;}
+  #gate img{width:110px; height:110px; background:#f8f6ea; border-radius:50%; object-fit:contain;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="gate">
+    <img src="/img/logo.png" alt="logo" style="border-radius:50%;">
+    <h1 style="margin-top:12px;">ESTHETICS RISING</h1>
+    <p style="color:#9a917e; margin:8px 0 4px;">Back office — enter your key</p>
+    <input type="password" id="keyInput" placeholder="Store key">
+    <button class="bigbtn" id="enterBtn">ENTER</button>
+    <p class="msg err" id="gateMsg"></p>
+  </div>
+
+  <div id="app" class="hidden">
+    <header>
+      <img src="/img/logo.png" alt="logo" style="border-radius:50%;">
+      <div>
+        <h1>ESTHETICS RISING</h1>
+        <small>BOOKINGS BACK OFFICE · SOUTH DADE TECHNICAL COLLEGE</small>
+      </div>
+      <div class="live" id="liveBox">connecting…</div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab sel" data-tab="bookings">BOOKINGS</div>
+      <div class="tab" data-tab="services">SERVICES</div>
+      <div class="tab" data-tab="schedule">SCHEDULE</div>
+    </div>
+
+    <section id="tab-bookings">
+      <div class="filters">
+        <input type="date" id="fDate">
+        <select id="fStatus">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="done">Done</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="no-show">No-show</option>
+        </select>
+        <button class="act" id="fToday">Today</button>
+        <button class="act" id="fAll">All</button>
+      </div>
+      <div id="bookingList"></div>
+      <p class="msg" id="bkMsg"></p>
+      <div class="card" style="margin-top:16px;">
+        <div style="font-size:12px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:9px;">Clean up · keep what you want to save</div>
+        <div class="actions" style="margin-top:0;">
+          <button class="act" id="clearCancelled">Clear cancelled</button>
+          <button class="act" id="clearNoShow">Clear no-shows</button>
+          <button class="act" id="clearDone">Clear completed</button>
+          <button class="act danger" id="clearBtn">Clear ALL bookings</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-services" class="hidden">
+      <div id="catalogEditor"></div>
+      <button class="bigbtn" id="saveCatalog">SAVE SERVICES</button>
+      <p class="msg" id="catMsg"></p>
+    </section>
+
+    <section id="tab-schedule" class="hidden">
+      <div class="card">
+        <label>Open days</label>
+        <div class="days" id="dayPicker"></div>
+        <label>Time blocks — one per line (Bloques de horario — uno por línea)</label>
+        <textarea id="slotText" rows="8" placeholder="9:00 AM&#10;10:00 AM&#10;11:00 AM&#10;12:00 PM&#10;1:00 PM&#10;2:00 PM&#10;3:00 PM&#10;4:00 PM&#10;5:00 PM&#10;6:00 PM"></textarea>
+        <label>Bookings per time block (Reservas por bloque)</label>
+        <input type="number" id="capInput" min="1" max="20">
+        <button class="bigbtn" id="saveSettings">SAVE SCHEDULE</button>
+        <p class="msg" id="setMsg"></p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<audio id="ding" preload="auto">
+  <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==" type="audio/wav">
+</audio>
+
+<script>
+let KEY = localStorage.getItem("er_store_key") || "";
+let bookings = [], catalog = null, settings = null;
+const $ = (id) => document.getElementById(id);
+const money = (n) => "$" + (Number.isInteger(n) ? n : Number(n).toFixed(2));
+const H = () => ({ "Content-Type": "application/json", "x-store-key": KEY });
+
+async function api(path, opts = {}){
+  const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), "x-store-key": KEY } });
+  if (r.status === 401) throw new Error("Wrong key.");
+  return r;
+}
+
+async function enter(){
+  KEY = $("keyInput").value.trim() || KEY;
+  try {
+    const r = await api("/api/bookings");
+    if (!r.ok) throw new Error("Wrong key.");
+    localStorage.setItem("er_store_key", KEY);
+    $("gate").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    await refreshAll();
+    connectSSE();
+  } catch (e) { $("gateMsg").textContent = "That key didn't work — try again."; }
+}
+$("enterBtn").onclick = enter;
+$("keyInput").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
+if (KEY){ $("keyInput").value = KEY; enter(); }
+
+async function refreshAll(){
+  bookings = await (await api("/api/bookings")).json();
+  catalog = await (await fetch("/api/catalog")).json();
+  settings = await (await fetch("/api/settings")).json();
+  renderBookings(); renderCatalog(); renderSettings();
+}
+
+// ---------- Bookings ----------
+const STATUS_LABEL = { pending: "PENDING", confirmed: "CONFIRMED", done: "DONE", cancelled: "CANCELLED", "no-show": "NO-SHOW" };
+function fmtDate(ds){
+  const d = new Date(ds + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+function renderBookings(){
+  const fd = $("fDate").value, fs = $("fStatus").value;
+  const list = bookings.filter(b => (!fd || b.date === fd) && (!fs || b.status === fs));
+  const box = $("bookingList");
+  box.innerHTML = list.length ? "" : "<div class='card' style='text-align:center; color:#9a917e;'>No bookings here yet.</div>";
+  for (const b of list){
+    const svcArr = (b.services && b.services.length) ? b.services : (b.service ? [b.service] : []);
+    const svcHtml = svcArr.map(s =>
+      "<div class='svc' style='font-size:15px;'>" + s.name + " · " + money(s.price) + "</div>").join("") +
+      (svcArr.length > 1 ? "<div class='meta'><b>Total: " + money(b.total) + "</b> · " + svcArr.length + " services</div>" : "");
+    const el = document.createElement("div");
+    el.className = "card bkg";
+    el.innerHTML =
+      "<div class='top'><span class='num'>" + b.number + "</span>" +
+      "<span class='badge st-" + b.status + "'>" + STATUS_LABEL[b.status] + "</span></div>" +
+      svcHtml +
+      "<div class='meta'>" + fmtDate(b.date) + " at " + b.time + "<br>" +
+      b.customer.name + " · <a href='tel:" + b.customer.phone + "' style='color:var(--gold)'>" + b.customer.phone + "</a></div>" +
+      (b.notes ? "<div class='notes'>“" + b.notes + "”</div>" : "") +
+      "<div class='actions'>" +
+      (b.status === "pending" ? "<button class='act primary' data-a='confirmed'>Confirm</button>" : "") +
+      (b.status === "confirmed" ? "<button class='act primary' data-a='done'>Mark done</button><button class='act' data-a='no-show'>No-show</button>" : "") +
+      (b.status !== "cancelled" && b.status !== "done" ? "<button class='act danger' data-a='cancelled'>Cancel</button>" : "") +
+      (b.status === "cancelled" || b.status === "no-show" ? "<button class='act' data-a='pending'>Reopen</button>" : "") +
+      "<button class='act danger' data-del='1' title='Delete this booking'>🗑 Delete</button>" +
+      "</div>";
+    el.querySelectorAll("button.act").forEach(btn => {
+      btn.onclick = async () => {
+        if (btn.dataset.del){
+          if (!confirm("Delete booking " + b.number + " (" + b.customer.name + ")? This cannot be undone.")) return;
+          await api("/api/bookings/" + b.id, { method: "DELETE" });
+          await refreshAll();
+          return;
+        }
+        await api("/api/bookings/" + b.id, { method: "PATCH", headers: H(), body: JSON.stringify({ status: btn.dataset.a }) });
+        await refreshAll();
+      };
+    });
+    box.appendChild(el);
+  }
+}
+$("fDate").addEventListener("change", renderBookings);
+$("fStatus").addEventListener("change", renderBookings);
+$("fToday").onclick = () => { const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  $("fDate").value = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()); renderBookings(); };
+$("fAll").onclick = () => { $("fDate").value = ""; $("fStatus").value = ""; renderBookings(); };
+$("clearBtn").onclick = async () => {
+  if (!confirm("Delete ALL bookings? Use only to clean up test bookings.")) return;
+  await api("/api/bookings", { method: "DELETE" });
+  await refreshAll();
+};
+async function clearByStatus(status, label){
+  const n = bookings.filter(b => b.status === status).length;
+  if (!n){ $("bkMsg").textContent = "No " + label + " bookings to clear."; return; }
+  if (!confirm("Delete " + n + " " + label + " booking(s)? Everything else stays saved.")) return;
+  const r = await api("/api/bookings?status=" + status, { method: "DELETE" });
+  const data = await r.json().catch(() => ({}));
+  await refreshAll();
+  $("bkMsg").textContent = "Cleared " + (data.deleted ?? n) + " " + label + " booking(s) ✓";
+}
+$("clearCancelled").onclick = () => clearByStatus("cancelled", "cancelled");
+$("clearNoShow").onclick = () => clearByStatus("no-show", "no-show");
+$("clearDone").onclick = () => clearByStatus("done", "completed");
+
+// ---------- Services editor ----------
+function renderCatalog(){
+  const box = $("catalogEditor");
+  box.innerHTML = "";
+  catalog.departments.forEach((d, di) => {
+    const h = document.createElement("div");
+    h.className = "deptname"; h.textContent = d.name;
+    box.appendChild(h);
+    d.categories.forEach((c, ci) => {
+      c.items.forEach((it, ii) => {
+        const row = document.createElement("div");
+        row.className = "itemrow";
+        row.innerHTML =
+          "<input type='checkbox' " + (it.active ? "checked" : "") + " title='Active'>" +
+          "<input type='text' class='nm' value='" + it.name.replace(/'/g, "&#39;") + "'>" +
+          "<input type='number' class='pr' value='" + it.price + "' min='0' step='1'>";
+        const [chk, nm, pr] = row.querySelectorAll("input");
+        chk.onchange = () => { catalog.departments[di].categories[ci].items[ii].active = chk.checked; };
+        nm.onchange = () => { catalog.departments[di].categories[ci].items[ii].name = nm.value; };
+        pr.onchange = () => { catalog.departments[di].categories[ci].items[ii].price = Number(pr.value); };
+        box.appendChild(row);
+      });
+    });
+  });
+}
+$("saveCatalog").onclick = async () => {
+  const r = await api("/api/catalog", { method: "PUT", headers: H(), body: JSON.stringify(catalog) });
+  $("catMsg").textContent = r.ok ? "Services saved ✓" : "Could not save.";
+  $("catMsg").className = "msg " + (r.ok ? "okmsg" : "err");
+};
+
+// ---------- Schedule editor ----------
+const DAYNAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function renderSettings(){
+  const dp = $("dayPicker");
+  dp.innerHTML = "";
+  DAYNAMES.forEach((n, i) => {
+    const el = document.createElement("div");
+    el.className = "day" + (settings.openDays.includes(i) ? " sel" : "");
+    el.textContent = n;
+    el.onclick = () => {
+      const k = settings.openDays.indexOf(i);
+      if (k >= 0) settings.openDays.splice(k, 1); else settings.openDays.push(i);
+      renderSettings();
+    };
+    dp.appendChild(el);
+  });
+  $("slotText").value = settings.slots.join("\n");
+  $("capInput").value = settings.capacity;
+}
+$("saveSettings").onclick = async () => {
+  const body = {
+    openDays: settings.openDays,
+    slots: $("slotText").value.split("\n").map(s => s.trim()).filter(Boolean),
+    capacity: Number($("capInput").value)
+  };
+  const r = await api("/api/settings", { method: "PUT", headers: H(), body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (r.ok){ settings = data.settings; renderSettings(); }
+  $("setMsg").textContent = r.ok ? "Schedule saved ✓" : (data.error || "Could not save.");
+  $("setMsg").className = "msg " + (r.ok ? "okmsg" : "err");
+};
+
+// ---------- Tabs ----------
+document.querySelectorAll(".tab").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("sel"));
+    t.classList.add("sel");
+    ["bookings", "services", "schedule"].forEach(n =>
+      $("tab-" + n).classList.toggle("hidden", n !== t.dataset.tab));
+  };
+});
+
+// ---------- Live events ----------
+function connectSSE(){
+  const es = new EventSource("/api/events?key=" + encodeURIComponent(KEY));
+  es.addEventListener("connected", () => { $("liveBox").innerHTML = "<b>●</b> live"; });
+  const onChange = async () => { await refreshAll(); };
+  es.addEventListener("new-booking", async () => {
+    try { $("ding").play().catch(() => {}); } catch (e) {}
+    await onChange();
+  });
+  es.addEventListener("booking-status", onChange);
+  es.addEventListener("bookings-cleared", onChange);
+  es.addEventListener("catalog-updated", onChange);
+  es.addEventListener("settings-updated", onChange);
+  es.onerror = () => { $("liveBox").textContent = "reconnecting…"; };
+}
+</script>
+</body>
+</html>

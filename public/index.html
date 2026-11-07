@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fade Factory Barber Shop — Book Your Chair</title>
+<style>
+  :root{
+    --cream:#edf0f5; --paper:#ffffff; --ink:#1d2637; --dark:#14264c;
+    --gold:#b3202c; --gold-l:#33507e; --line:#d4dae5; --ok:#2e7d32; --bad:#b3261e;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Georgia,'Times New Roman',serif; background:var(--cream); color:var(--ink); padding:18px 14px 60px;}
+  .wrap{max-width:680px; margin:0 auto;}
+  .frame{background:var(--paper); border:2px solid #14264c; outline:1px solid var(--gold-l); outline-offset:5px; padding:30px 22px 36px;}
+  header{text-align:center;}
+  header img{width:170px; height:170px; object-fit:cover; border-radius:50%;}
+  h1{font-size:27px; letter-spacing:6px; color:var(--dark); font-weight:600; margin-top:8px;}
+  .college{font-style:italic; color:var(--gold); font-size:16px; margin-top:3px;}
+  .phone{margin-top:7px; font-size:16.5px; letter-spacing:1px; color:var(--dark);}
+  .phone a{color:var(--dark); text-decoration:none; border-bottom:1px solid var(--gold-l); font-weight:bold;}
+  footer a{color:var(--gold); text-decoration:none; font-weight:bold;}
+  .tag{font-style:italic; color:var(--gold); font-size:14px; margin-top:8px; line-height:1.5;}
+  .rule{display:flex; align-items:center; gap:10px; margin:20px auto 4px; max-width:340px;}
+  .rule span{flex:1; border-top:1px solid var(--gold-l);}
+  .rule i{color:var(--gold); font-style:normal; font-size:11px;}
+  h2{font-size:19px; letter-spacing:3px; color:var(--gold); text-align:center; margin:26px 0 4px; font-weight:600;}
+  h2 .es{display:block; font-size:13px; letter-spacing:1px; font-style:italic; text-transform:none; color:var(--gold-l); margin-top:3px;}
+  .sub{text-align:center; font-style:italic; color:var(--gold); font-size:15px; line-height:1.55;}
+  .dept{font-size:15px; letter-spacing:2px; color:var(--gold); margin:18px 0 8px; text-transform:uppercase;}
+  .dept .es{font-size:12px; letter-spacing:0; font-style:italic; text-transform:none; color:var(--gold-l); margin-left:7px;}
+  .svc{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
+       background:#fff; border:1px solid var(--line); border-radius:10px; padding:13px 15px; margin-bottom:8px;
+       cursor:pointer; font-family:inherit; text-align:left; font-size:16px; color:var(--ink);}
+  .svc small{display:block; font-style:italic; color:var(--gold); font-size:13px; margin-top:2px;}
+  .svc .price{font-weight:bold; color:var(--dark); white-space:nowrap;}
+  .svc.sel{border-color:var(--gold); background:#fbeaea; box-shadow:0 0 0 1px var(--gold);}
+  .selsum{border:1px solid var(--gold-l); background:#fbeaea; border-radius:10px; padding:13px 15px; margin:4px 0 6px;}
+  .selsum .ss-head{font-size:13px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:7px;}
+  .selsum .ss-line{display:flex; justify-content:space-between; font-size:15px; margin-top:3px;}
+  .selsum .ss-line small{font-style:italic; color:var(--gold); font-size:12px; display:block;}
+  .selsum .ss-total{display:flex; justify-content:space-between; border-top:1px solid var(--gold-l); margin-top:9px; padding-top:8px; font-weight:bold; color:var(--dark); font-size:17px;}
+  .pick-hint{text-align:center; font-style:italic; color:var(--gold-l); font-size:13px; margin-top:2px;}
+  label{display:block; font-size:14px; letter-spacing:1px; color:var(--gold); margin:14px 0 6px; text-transform:uppercase;}
+  label .es{font-size:12px; letter-spacing:0; font-style:italic; text-transform:none; color:var(--gold-l);}
+  input[type="date"], input[type="text"], input[type="tel"], textarea{
+    width:100%; padding:12px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:16px; background:#fff; color:var(--ink);}
+  .slots{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .slot{border:1px solid var(--line); background:#fff; border-radius:20px; padding:9px 15px; font-family:inherit; font-size:15px; cursor:pointer; color:var(--ink);}
+  .slot.sel{background:var(--gold); color:#fff; border-color:var(--gold);}
+  .slot:disabled{opacity:.38; cursor:not-allowed; text-decoration:line-through;}
+  .slot .left{display:block; font-size:11px; font-style:italic; color:var(--gold);}
+  .slot.sel .left{color:#ffd7db;}
+  .bigbtn{width:100%; margin-top:24px; background:var(--gold); color:#fff; border:none; border-radius:10px;
+          padding:15px; font-family:inherit; font-size:18px; letter-spacing:2px; cursor:pointer; line-height:1.3;}
+  .bigbtn small{display:block; font-size:12px; letter-spacing:1px; font-style:italic; opacity:.85;}
+  .bigbtn:disabled{opacity:.45; cursor:not-allowed;}
+  .msg{margin-top:14px; text-align:center; font-size:15px; min-height:20px; line-height:1.5;}
+  .msg.err{color:var(--bad);}
+  .confirm{text-align:center; padding:10px 0;}
+  .confirm .num{font-size:44px; letter-spacing:3px; color:var(--dark); margin:8px 0;}
+  .confirm .badge{display:inline-block; background:#fbeaea; color:#7e1a22; border:1px solid var(--gold-l);
+                  padding:5px 14px; border-radius:16px; font-size:14px; letter-spacing:1px;}
+  .confirm p{margin-top:10px; font-size:16px; line-height:1.5;}
+  .trackbox{margin-top:34px; border-top:1px solid var(--line); padding-top:6px;}
+  footer{text-align:center; margin-top:30px; color:var(--gold); font-style:italic; font-size:14px; line-height:1.6;}
+  .allset{font-size:17px; color:var(--dark); margin:2px 0 14px; line-height:1.5;}
+  .allset span{font-style:italic; color:var(--gold); font-size:14.5px;}
+  .hidden{display:none;}
+  /* ---- progress tracker ---- */
+  .mycard{border:1px solid var(--gold-l); background:#ffffff; border-radius:12px; padding:16px; margin:18px 0 6px;}
+  .mycard .mc-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;}
+  .mycard .mc-num{font-weight:bold; color:var(--dark); letter-spacing:1px;}
+  .mycard .mc-svc{font-size:16px; margin-top:2px;}
+  .mycard .mc-svc small{display:block; font-style:italic; color:var(--gold); font-size:13px;}
+  .mycard .mc-when{color:var(--gold); font-style:italic; font-size:14px; margin-top:2px;}
+  .steps{display:flex; align-items:flex-start; margin:18px 2px 6px;}
+  .step{flex:1; text-align:center; position:relative;}
+  .step .dot{width:26px; height:26px; border-radius:50%; border:2px solid var(--gold-l); background:#fff;
+             margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--gold); position:relative; z-index:2;}
+  .step.on .dot{background:var(--gold); border-color:var(--gold); color:#fff;}
+  .step .bar{position:absolute; top:13px; left:-50%; width:100%; height:3px; background:var(--line); z-index:1;}
+  .step.on .bar{background:var(--gold);}
+  .step:first-child .bar{display:none;}
+  .step .cap{font-size:12px; letter-spacing:1px; margin-top:7px; color:var(--gold); text-transform:uppercase;}
+  .step .cap small{display:block; font-size:11px; font-style:italic; text-transform:none; letter-spacing:0; color:var(--gold-l);}
+  .mc-msg{text-align:center; font-size:15px; margin-top:8px; line-height:1.5;}
+  .mc-msg .es{display:block; font-style:italic; color:var(--gold); font-size:13px;}
+  .mc-msg.bad{color:var(--bad);}
+  .arrive{border:1px solid var(--gold-l); background:#eef2fa; border-radius:9px; padding:12px 14px; margin-top:13px; text-align:left; font-size:14.5px; line-height:1.55; color:var(--dark);}
+  .arrive .a-head{display:block; font-size:12px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:5px;}
+  .arrive .es{display:block; font-style:italic; color:var(--gold); font-size:13px; margin-top:4px;}
+  .forget{display:block; margin:10px auto 0; background:none; border:none; color:var(--gold-l); font-family:inherit;
+          font-style:italic; font-size:13px; cursor:pointer; text-decoration:underline;}
+  .barber{text-align:center; margin-top:34px; border-top:1px solid var(--line); padding-top:22px;}
+  .barber img{width:100%; max-width:430px; border-radius:12px; border:2px solid var(--dark);}
+  .barber .b-head{letter-spacing:2px; color:var(--gold); font-size:13px; margin:13px 0 6px;}
+  .barber p{font-size:15.5px; line-height:1.55; color:var(--ink);}
+  .barber p span{font-style:italic; color:var(--gold); font-size:13.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="frame">
+
+    <div id="bookView">
+      <header>
+        <img src="/img/logo.png" alt="Fade Factory Barber Shop logo">
+        <h1>FADE FACTORY</h1>
+        <div class="college">Barber Shop · Cutler Bay</div>
+        <div class="phone">📞 <a href="tel:+13059692286">(305) 969-2286</a></div>
+        <div class="tag">Book your chair — skip the wait · Walk-ins welcome<br>
+          <span>Reserva tu silla — sin esperar · Walk-ins bienvenidos</span></div>
+        <div class="rule"><span></span><i>◆</i><span></span></div>
+      </header>
+
+      <div id="myCard" class="hidden"></div>
+
+      <h2>BOOK YOUR CHAIR <span class="es">Reserva tu silla</span></h2>
+      <p class="sub">Appointment prices — book ahead and your chair is ready when you arrive.<br>
+        Precios de cita — reserva y tu silla está lista cuando llegues.</p>
+      <p class="pick-hint">Tap everything you'd like — you can book several services in one visit.<br>
+        Toca todo lo que quieras — puedes reservar varios servicios en una sola visita.</p>
+
+      <div id="services"></div>
+      <div id="selSummary" class="hidden"></div>
+
+      <label for="date">Pick a day <span class="es">· Elige el día</span></label>
+      <input type="date" id="date">
+      <div id="slotWrap" class="hidden">
+        <label>Pick a time <span class="es">· Elige la hora</span></label>
+        <div class="slots" id="slots"></div>
+      </div>
+      <p class="msg" id="dayMsg"></p>
+
+      <label for="name">Your name <span class="es">· Tu nombre</span></label>
+      <input type="text" id="name" autocomplete="name" placeholder="Full name · Nombre completo">
+      <label for="phone">Your phone <span class="es">· Tu teléfono</span></label>
+      <input type="tel" id="phone" autocomplete="tel" placeholder="(305) 555-0123">
+      <label for="notes">Notes (optional) <span class="es">· Notas (opcional)</span></label>
+      <textarea id="notes" rows="2" placeholder="Anything we should know? · ¿Algo que debamos saber?"></textarea>
+
+      <button class="bigbtn" id="bookBtn" disabled>BOOK MY CHAIR<small>Reservar mi silla</small></button>
+      <p class="msg" id="formMsg"></p>
+
+      <div class="trackbox">
+        <h2>CHECK MY BOOKING <span class="es">Revisa tu reserva</span></h2>
+        <label for="tNum">Booking number <span class="es">· Número de reserva</span></label>
+        <input type="text" id="tNum" placeholder="#001">
+        <label for="tPhone">Phone used to book <span class="es">· Teléfono de la reserva</span></label>
+        <input type="tel" id="tPhone" placeholder="(305) 555-0123">
+        <button class="bigbtn" id="trackBtn" style="margin-top:16px;">CHECK STATUS<small>Revisar estado</small></button>
+        <p class="msg" id="trackMsg"></p>
+        <div id="trackCard"></div>
+      </div>
+    </div>
+
+    <div id="doneView" class="hidden">
+      <header>
+        <img src="/img/logo.png" alt="Fade Factory Barber Shop logo" style="width:130px;height:130px;border-radius:50%;">
+      </header>
+      <div class="confirm">
+        <div class="badge">BOOKING RECEIVED · RESERVA RECIBIDA</div>
+        <div class="num" id="cNum">#000</div>
+        <p class="allset">You're all set — see you in the chair.<br>
+          <span>Ya estás listo — te vemos en la silla.</span></p>
+        <div id="doneCard"></div>
+        <p style="font-style:italic; color:var(--gold);">
+          This page remembers your booking — come back anytime to watch it move.<br>
+          Esta página recuerda tu reserva — vuelve cuando quieras para ver su progreso.
+        </p>
+        <button class="bigbtn" id="againBtn" style="max-width:340px;">BOOK ANOTHER SERVICE<small>Reservar otro servicio</small></button>
+      </div>
+    </div>
+
+    <div class="barber">
+      <img src="/img/rafi.jpg" alt="Rawfy, owner and master barber of Fade Factory Barber Shop">
+      <div class="b-head">MEET YOUR BARBER · CONOCE A TU BARBERO</div>
+      <p><b>Rawfy</b> — Licensed Master Barber · 25 years behind the chair<br>
+      <span>Barbero maestro licenciado · 25 años de experiencia</span></p>
+    </div>
+
+    <footer>
+      Fade Factory Barber Shop · <a href="tel:+13059692286">(305) 969-2286</a><br>
+      11373 SW 211 St #6, Miami, FL 33189<br>
+      Walk-ins welcome · Appointments (786) 493-5243
+    </footer>
+  </div>
+</div>
+
+<script>
+let catalog = null, settings = null;
+const selServices = new Map(); // id -> item
+let selTime = null;
+
+const $ = (id) => document.getElementById(id);
+const money = (n) => "$" + (Number.isInteger(n) ? n : Number(n).toFixed(2));
+
+function todayStr(){
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
+function fmtWhen(ds, time){
+  const d = new Date(ds + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) + " at " + time;
+}
+
+// ---------- progress tracker ----------
+const STEP_DEFS = [
+  { key: "received",  en: "Received",  es: "Recibida" },
+  { key: "confirmed", en: "Confirmed", es: "Confirmada" },
+  { key: "done",      en: "Completed", es: "Completada" }
+];
+const STATUS_STEP = { pending: 0, confirmed: 1, done: 2 };
+const STATUS_MSG = {
+  pending:   { en: "We received your booking — our team will confirm it shortly.",
+               es: "Recibimos tu reserva — nuestro equipo la confirmará pronto." },
+  confirmed: { en: "Confirmed — see you then!", es: "¡Confirmada — te esperamos!" },
+  done:      { en: "Completed — looking sharp. Thanks for booking with us.", es: "Completada — gracias por reservar con nosotros." },
+  cancelled: { en: "This booking was cancelled. Please book again or call the shop.",
+               es: "Esta reserva fue cancelada. Reserva de nuevo o llama a la barbería." },
+  "no-show": { en: "This booking was marked as a no-show.", es: "Esta reserva fue marcada como inasistencia." }
+};
+
+function progressHTML(b){
+  const bad = b.status === "cancelled" || b.status === "no-show";
+  const upto = STATUS_STEP[b.status];
+  let steps = "";
+  STEP_DEFS.forEach((s, i) => {
+    const on = !bad && upto !== undefined && i <= upto;
+    steps += "<div class='step" + (on ? " on" : "") + "'><div class='bar'></div>" +
+      "<div class='dot'>" + (on ? "✓" : (i + 1)) + "</div>" +
+      "<div class='cap'>" + s.en + "<small>" + s.es + "</small></div></div>";
+  });
+  const m = STATUS_MSG[b.status] || STATUS_MSG.pending;
+  const svcs = (b.services && b.services.length)
+    ? b.services
+    : [{ name: b.service, nameEs: b.serviceEs || "", price: b.price }];
+  const total = b.total != null ? b.total : svcs.reduce((s, x) => s + (x.price || 0), 0);
+  const svcLines = svcs.map(s =>
+    "<div class='mc-svc'>" + s.name + " · " + money(s.price) +
+    (s.nameEs ? "<small>" + s.nameEs + "</small>" : "") + "</div>").join("");
+  return "<div class='mc-head'><span class='mc-num'>" + b.number + "</span>" +
+    "<span style='color:var(--dark); font-weight:bold; font-size:15px;'>Total " + money(total) + "</span></div>" +
+    svcLines +
+    "<div class='mc-when'>" + fmtWhen(b.date, b.time) + "</div>" +
+    (bad ? "" :
+      "<div class='arrive'><span class='a-head'>When you arrive · Cuando llegues</span>" +
+      "<b>Fade Factory Barber Shop</b> — 11373 SW 211 St #6, Cutler Bay. " +
+      "Show this booking on your phone when you arrive — walk-ins always welcome." +
+      "<span class='es'>Fade Factory Barber Shop — 11373 SW 211 St #6, Cutler Bay. " +
+      "Muestra esta reserva en tu teléfono al llegar — walk-ins siempre bienvenidos.</span>" +
+      "<span style='display:block; margin-top:7px;'>Questions? Call the shop: <b>(305) 969-2286</b>" +
+      "<span class='es' style='display:inline; margin:0;'> · ¿Preguntas? Llama a la barbería</span></span></div>") +
+    "<div class='steps'>" + steps + "</div>" +
+    "<p class='mc-msg" + (bad ? " bad" : "") + "'>" + m.en + "<span class='es'>" + m.es + "</span></p>";
+}
+
+async function fetchBooking(number, phone){
+  const r = await fetch("/api/track?number=" + encodeURIComponent(number) + "&phone=" + encodeURIComponent(phone));
+  if (!r.ok) return null;
+  return await r.json();
+}
+
+async function showMyCard(){
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("ff_my_booking") || "null"); } catch (e) {}
+  const box = $("myCard");
+  if (!saved || !saved.number || !saved.phone){ box.classList.add("hidden"); box.innerHTML = ""; return; }
+  const b = await fetchBooking(saved.number, saved.phone);
+  if (!b){ box.classList.add("hidden"); box.innerHTML = ""; return; }
+  box.innerHTML = "<div style='text-align:center; font-size:13px; letter-spacing:2px; color:var(--gold);'>" +
+    "YOUR BOOKING · TU RESERVA</div>" + progressHTML(b) +
+    "<button class='forget' id='forgetBtn'>Not my booking · No es mi reserva</button>";
+  box.classList.remove("hidden");
+  box.classList.add("mycard");
+  $("forgetBtn").onclick = () => {
+    localStorage.removeItem("ff_my_booking");
+    box.classList.add("hidden"); box.innerHTML = "";
+  };
+}
+
+// ---------- booking form ----------
+async function load(){
+  catalog = await (await fetch("/api/catalog")).json();
+  settings = await (await fetch("/api/settings")).json();
+  const box = $("services");
+  box.innerHTML = "";
+  for (const d of catalog.departments){
+    const h = document.createElement("div");
+    h.className = "dept";
+    h.innerHTML = d.name + (d.nameEs ? "<span class='es'>" + d.nameEs + "</span>" : "");
+    box.appendChild(h);
+    for (const c of d.categories) for (const it of c.items){
+      if (!it.active) continue;
+      const b = document.createElement("button");
+      b.className = "svc"; b.dataset.id = it.id;
+      b.innerHTML = "<span>" + it.name +
+        (it.nameEs ? "<small>" + it.nameEs + "</small>" : "") +
+        (it.desc ? "<small>" + it.desc + "</small>" : "") +
+        "</span><span class='price'>" + money(it.price) + "</span>";
+      b.onclick = () => {
+        if (selServices.has(it.id)) { selServices.delete(it.id); b.classList.remove("sel"); }
+        else { selServices.set(it.id, it); b.classList.add("sel"); }
+        renderSummary();
+        validate();
+      };
+      box.appendChild(b);
+    }
+  }
+  const dateEl = $("date");
+  dateEl.min = todayStr();
+  dateEl.max = (() => { const d = new Date(); d.setDate(d.getDate() + 60);
+    const p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()); })();
+  dateEl.addEventListener("change", loadSlots);
+  $("name").addEventListener("input", validate);
+  $("phone").addEventListener("input", validate);
+  showMyCard();
+}
+
+async function loadSlots(){
+  selTime = null;
+  const date = $("date").value;
+  const wrap = $("slotWrap"), box = $("slots"), msg = $("dayMsg");
+  box.innerHTML = ""; msg.textContent = ""; msg.className = "msg";
+  if (!date){ wrap.classList.add("hidden"); validate(); return; }
+  const r = await (await fetch("/api/availability?date=" + date)).json();
+  if (!r.open){
+    wrap.classList.add("hidden");
+    msg.innerHTML = "We are closed that day — please pick another date.<br><span style='font-style:italic; color:var(--gold);'>Cerramos ese día — elige otra fecha, por favor.</span>";
+    msg.classList.add("err");
+    validate(); return;
+  }
+  wrap.classList.remove("hidden");
+  for (const s of r.slots){
+    const b = document.createElement("button");
+    b.className = "slot"; b.type = "button";
+    b.innerHTML = s.time + (s.left <= 2 && s.left > 0 ? "<span class='left'>" + s.left + " left · quedan " + s.left + "</span>" : "");
+    if (s.left <= 0){ b.disabled = true; b.innerHTML = s.time + "<span class='left'>full · lleno</span>"; }
+    b.onclick = () => {
+      document.querySelectorAll(".slot").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel");
+      selTime = s.time;
+      validate();
+    };
+    box.appendChild(b);
+  }
+  validate();
+}
+
+function renderSummary(){
+  const box = $("selSummary");
+  if (!selServices.size){ box.classList.add("hidden"); box.innerHTML = ""; return; }
+  let total = 0, lines = "";
+  for (const it of selServices.values()){
+    total += it.price;
+    lines += "<div class='ss-line'><span>" + it.name +
+      (it.nameEs ? "<small>" + it.nameEs + "</small>" : "") +
+      "</span><span>" + money(it.price) + "</span></div>";
+  }
+  box.innerHTML = "<div class='ss-head'>Your services · Tus servicios</div>" + lines +
+    "<div class='ss-total'><span>Total</span><span>" + money(total) + "</span></div>";
+  box.classList.remove("hidden");
+  box.classList.add("selsum");
+}
+
+function validate(){
+  $("bookBtn").disabled = !(selServices.size && $("date").value && selTime &&
+    $("name").value.trim() && $("phone").value.trim());
+}
+
+$("bookBtn").onclick = async () => {
+  const msg = $("formMsg");
+  msg.textContent = ""; msg.className = "msg";
+  $("bookBtn").disabled = true;
+  try {
+    const r = await fetch("/api/bookings", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        serviceIds: [...selServices.keys()],
+        customer: { name: $("name").value, phone: $("phone").value },
+        date: $("date").value, time: selTime, notes: $("notes").value
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Something went wrong.");
+    try {
+      localStorage.setItem("ff_my_booking", JSON.stringify({
+        number: data.number, phone: data.customer.phone
+      }));
+    } catch (e) {}
+    $("cNum").textContent = data.number;
+    $("doneCard").innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "mycard";
+    card.innerHTML = progressHTML({
+      number: data.number, services: data.services, total: data.total,
+      date: data.date, time: data.time, status: data.status
+    });
+    $("doneCard").appendChild(card);
+    $("bookView").classList.add("hidden");
+    $("doneView").classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (e) {
+    msg.textContent = e.message; msg.classList.add("err");
+    if (/filled up/i.test(e.message)) loadSlots();
+  } finally { validate(); }
+};
+
+$("againBtn").onclick = () => location.reload();
+
+$("trackBtn").onclick = async () => {
+  const msg = $("trackMsg");
+  msg.textContent = ""; msg.className = "msg";
+  $("trackCard").innerHTML = "";
+  const num = $("tNum").value.trim(), phone = $("tPhone").value.trim();
+  if (!num || !phone){
+    msg.innerHTML = "Enter your booking number and phone.<br><span style='font-style:italic; color:var(--gold);'>Escribe tu número de reserva y tu teléfono.</span>";
+    msg.classList.add("err"); return;
+  }
+  const b = await fetchBooking(num, phone);
+  if (!b){
+    msg.innerHTML = "Booking not found — check the number and phone.<br><span style='font-style:italic; color:var(--gold);'>No encontramos esa reserva — revisa el número y el teléfono.</span>";
+    msg.classList.add("err"); return;
+  }
+  try { localStorage.setItem("ff_my_booking", JSON.stringify({ number: b.number, phone })); } catch (e) {}
+  const card = document.createElement("div");
+  card.className = "mycard";
+  card.innerHTML = progressHTML(b);
+  $("trackCard").appendChild(card);
+  showMyCard();
+};
+
+load();
+</script>
+</body>
+</html>
