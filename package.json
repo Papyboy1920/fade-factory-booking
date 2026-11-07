@@ -1,0 +1,19 @@
+{
+  "author": "",
+  "dependencies": {
+    "express": "^5.2.1",
+    "pg": "^8.13.1"
+  },
+  "description": "Sistema de reservas para Fade Factory Barber Shop (Cutler Bay, Miami, FL)",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "server.js",
+  "name": "fade-factory-booking",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "version": "1.0.0"
+}

@@ -1,0 +1,25 @@
+# Render Blueprint — Fade Factory Barber Shop (Cutler Bay)
+# Despliegue con 1 clic desde el dashboard de Render (New > Blueprint).
+# Crea el servicio web con plan gratuito.
+# DATABASE_URL: pegar la cadena de conexión de Neon (proyecto
+# proyecto fade-factory) en el dashboard de Render. Sin ella usa SQLite
+# local en disco efímero (solo pruebas).
+services:
+  - type: web
+    name: fade-factory-booking
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/catalog
+    envVars:
+      - key: STORE_KEY
+        generateValue: true
+        # Render genera una clave aleatoria. Cópiala del dashboard
+        # (Environment) y úsala para entrar a /store.
+      - key: DATABASE_URL
+        sync: false
+        # Pegar aquí la connection string de Neon.
+      - key: ADMIN_KEY
+        sync: false
+        # Clave privada del dueño (Portal) para /admin.
