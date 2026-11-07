@@ -113,6 +113,37 @@ function todayStr() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// ---- Duraciones: una reserva bloquea TODOS los slots que abarca ----
+function toMin(t) {
+  const m = String(t || "").match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return null;
+  let h = Number(m[1]) % 12;
+  if (/pm/i.test(m[3])) h += 12;
+  return h * 60 + Number(m[2]);
+}
+function bookingMins(b) {
+  if (b.mins) return Number(b.mins);
+  if (Array.isArray(b.services) && b.services.length) {
+    return b.services.reduce((s, x) => s + (Number(x.mins) || 60), 0);
+  }
+  return 60;
+}
+async function slotUsage(date, settings) {
+  const usage = {};
+  for (const s of settings.slots) usage[s] = 0;
+  const day = await db.listActiveForDate(date);
+  for (const b of day) {
+    const start = toMin(b.time);
+    if (start == null) continue;
+    const dur = bookingMins(b);
+    for (const s of settings.slots) {
+      const x = toMin(s);
+      if (x != null && x >= start && x < start + dur) usage[s]++;
+    }
+  }
+  return usage;
+}
+
 app.get("/api/availability", async (req, res) => {
   const date = String(req.query.date || "");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -123,11 +154,10 @@ app.get("/api/availability", async (req, res) => {
   if (!settings.openDays.includes(dow)) {
     return res.json({ date, open: false, slots: [] });
   }
-  const slots = [];
-  for (const time of settings.slots) {
-    const used = await db.countActiveForSlot(date, time);
-    slots.push({ time, used, left: Math.max(0, settings.capacity - used) });
-  }
+  const usage = await slotUsage(date, settings);
+  const slots = settings.slots.map((time) => ({
+    time, used: usage[time] || 0, left: Math.max(0, settings.capacity - (usage[time] || 0))
+  }));
   res.json({ date, open: true, slots });
 });
 
@@ -170,23 +200,30 @@ app.post("/api/bookings", async (req, res) => {
     return res.status(400).json({ error: "Please pick at least one service." });
   }
   const snapshots = [];
-  for (const id of [...new Set(ids)].slice(0, 12)) {
+  for (const id of ids.slice(0, 12)) {
     const item = findItem(catalog, id);
     if (!item || !item.active) {
       return res.status(400).json({ error: "One of those services is not available right now." });
     }
-    snapshots.push({ id: item.id, name: item.name, nameEs: item.nameEs || "", price: item.price });
+    snapshots.push({ id: item.id, name: item.name, nameEs: item.nameEs || "", price: item.price, mins: Number(item.mins) || 60 });
   }
   const total = Math.round(snapshots.reduce((s, x) => s + x.price, 0) * 100) / 100;
-  const used = await db.countActiveForSlot(date, time);
-  if (used >= settings.capacity) {
+  const totalMins = snapshots.reduce((s, x) => s + x.mins, 0);
+  const startMin = toMin(time);
+  const usage = await slotUsage(date, settings);
+  const blocked = settings.slots.some((s) => {
+    const x = toMin(s);
+    return x != null && startMin != null && x >= startMin && x < startMin + totalMins &&
+      (usage[s] || 0) >= settings.capacity;
+  });
+  if (blocked) {
     return res.status(409).json({ error: "That time just filled up. Please pick another time." });
   }
 
   const number = await db.nextBookingNumber();
   const booking = await db.createBooking({
     number,
-    service: { services: snapshots, total },
+    service: { services: snapshots, total, mins: totalMins },
     customer: {
       name: String(customer.name).trim().slice(0, 80),
       phone: String(customer.phone).trim().slice(0, 30)

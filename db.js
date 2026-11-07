@@ -88,7 +88,7 @@ function mergeCatalog(live, seed) {
           c.items.push(JSON.parse(JSON.stringify(sItem)));
           added++;
         } else {
-          for (const f of ["desc", "img", "nameEs"]) {
+          for (const f of ["desc", "img", "nameEs", "mins"]) {
             if ((it[f] === undefined || it[f] === null || it[f] === "") && sItem[f]) {
               it[f] = sItem[f];
               filled++;
@@ -207,6 +207,7 @@ function mapBooking(row) {
     service: services[0] || null,
     services,
     total,
+    mins: svc && svc.mins != null ? svc.mins : null,
     customer: JSON.parse(row.customer),
     date: row.date,
     time: row.time,
@@ -270,6 +271,19 @@ async function countActiveForSlot(date, time) {
   return row.n;
 }
 
+async function listActiveForDate(date) {
+  if (kind === "pg") {
+    const r = await pool.query(
+      "SELECT * FROM bookings WHERE date = $1 AND status IN ('pending','confirmed')",
+      [date]
+    );
+    return r.rows.map(mapBooking);
+  }
+  return sdb.prepare(
+    "SELECT * FROM bookings WHERE date = ? AND status IN ('pending','confirmed')"
+  ).all(date).map(mapBooking);
+}
+
 async function findByNumberAndPhone(number, phone) {
   const all = await listBookings();
   const clean = (s) => String(s || "").replace(/\D/g, "").slice(-10);
@@ -323,7 +337,7 @@ module.exports = {
   init, dbKind, kvGet, kvSet,
   getCatalog, setCatalog, getSettings, setSettings,
   nextBookingNumber, createBooking, listBookings,
-  countActiveForSlot, findByNumberAndPhone,
+  countActiveForSlot, listActiveForDate, findByNumberAndPhone,
   updateBookingStatus, deleteAllBookings,
   deleteBooking, deleteBookingsByStatus
 };

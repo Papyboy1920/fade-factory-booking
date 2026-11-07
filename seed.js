@@ -7,23 +7,23 @@
 // Men $35 · Corte+Barba $40 · Corte+Barba+Cejas $45 · Niños $25.
 // ============================================================
 
-const CATALOG_VERSION = 1;
+const CATALOG_VERSION = 2;
 
 const SEED_CATALOG = {
   departments: [
     {
       id: "haircuts", name: "Haircuts & Combos", nameEs: "Cortes y combos", img: "", categories: [
         { id: "haircuts-main", name: "Haircuts & Combos", items: [
-          { id: "haircut", name: "Haircut", nameEs: "Corte de cabello", price: 35, unit: "service", desc: "By appointment", img: "", active: true },
-          { id: "haircut-beard", name: "Haircut + Beard", nameEs: "Corte + barba", price: 40, unit: "service", desc: "By appointment", img: "", active: true },
-          { id: "haircut-beard-brows", name: "Haircut + Beard + Eyebrows", nameEs: "Corte + barba + cejas", price: 45, unit: "service", desc: "By appointment", img: "", active: true }
+          { id: "haircut", name: "Haircut", nameEs: "Corte de cabello", price: 35, mins: 45, unit: "service", desc: "By appointment", img: "", active: true },
+          { id: "haircut-beard", name: "Haircut + Beard", nameEs: "Corte + barba", price: 40, mins: 60, unit: "service", desc: "By appointment", img: "", active: true },
+          { id: "haircut-beard-brows", name: "Haircut + Beard + Eyebrows", nameEs: "Corte + barba + cejas", price: 45, mins: 75, unit: "service", desc: "By appointment", img: "", active: true }
         ] }
       ]
     },
     {
       id: "kids", name: "Kids", nameEs: "Niños", img: "", categories: [
         { id: "kids-main", name: "Kids", items: [
-          { id: "kids-haircut", name: "Kids Haircut", nameEs: "Corte de niños", price: 25, unit: "service", desc: "By appointment", img: "", active: true }
+          { id: "kids-haircut", name: "Kids Haircut", nameEs: "Corte de niños", price: 25, mins: 40, unit: "service", desc: "By appointment", img: "", active: true }
         ] }
       ]
     }
