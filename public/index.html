@@ -40,6 +40,11 @@
   .selsum .ss-line{display:flex; justify-content:space-between; font-size:15px; margin-top:3px;}
   .selsum .ss-line small{font-style:italic; color:var(--gold); font-size:12px; display:block;}
   .selsum .ss-total{display:flex; justify-content:space-between; border-top:1px solid var(--gold-l); margin-top:9px; padding-top:8px; font-weight:bold; color:var(--dark); font-size:17px;}
+  .qty{display:inline-flex; align-items:center; gap:7px; margin-left:10px; vertical-align:middle;}
+  .qbtn{width:26px; height:26px; border-radius:50%; border:1.5px solid var(--gold); background:#fff; color:var(--gold);
+        font-size:16px; font-weight:bold; line-height:1; cursor:pointer; font-family:inherit; padding:0;}
+  .qbtn:active{background:var(--gold); color:#fff;}
+  .qnum{font-weight:bold; color:var(--dark); min-width:14px; text-align:center;}
   .pick-hint{text-align:center; font-style:italic; color:var(--gold-l); font-size:13px; margin-top:2px;}
   label{display:block; font-size:14px; letter-spacing:1px; color:var(--gold); margin:14px 0 6px; text-transform:uppercase;}
   label .es{font-size:12px; letter-spacing:0; font-style:italic; text-transform:none; color:var(--gold-l);}
@@ -195,6 +200,7 @@ let selTime = null;
 
 const $ = (id) => document.getElementById(id);
 const money = (n) => "$" + (Number.isInteger(n) ? n : Number(n).toFixed(2));
+const fmtMins = (m) => { if (!m) return ""; if (m < 60) return m + " min"; const h = Math.floor(m / 60), r = m % 60; return r ? h + " hr " + r + " min" : h + " hr"; };
 
 function todayStr(){
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
@@ -243,7 +249,7 @@ function progressHTML(b){
   return "<div class='mc-head'><span class='mc-num'>" + b.number + "</span>" +
     "<span style='color:var(--dark); font-weight:bold; font-size:15px;'>Total " + money(total) + "</span></div>" +
     svcLines +
-    "<div class='mc-when'>" + fmtWhen(b.date, b.time) + "</div>" +
+    "<div class='mc-when'>" + fmtWhen(b.date, b.time) + (b.mins ? " · ⏱ ≈ " + fmtMins(b.mins) : "") + "</div>" +
     (bad ? "" :
       "<div class='arrive'><span class='a-head'>When you arrive · Cuando llegues</span>" +
       "<b>Fade Factory Barber Shop</b> — 11373 SW 211 St #6, Cutler Bay. " +
@@ -298,10 +304,11 @@ async function load(){
       b.innerHTML = "<span>" + it.name +
         (it.nameEs ? "<small>" + it.nameEs + "</small>" : "") +
         (it.desc ? "<small>" + it.desc + "</small>" : "") +
+        (it.mins ? "<small>⏱ ~" + it.mins + " min</small>" : "") +
         "</span><span class='price'>" + money(it.price) + "</span>";
       b.onclick = () => {
         if (selServices.has(it.id)) { selServices.delete(it.id); b.classList.remove("sel"); }
-        else { selServices.set(it.id, it); b.classList.add("sel"); }
+        else { selServices.set(it.id, { it, qty: 1 }); b.classList.add("sel"); }
         renderSummary();
         validate();
       };
@@ -352,17 +359,24 @@ async function loadSlots(){
 function renderSummary(){
   const box = $("selSummary");
   if (!selServices.size){ box.classList.add("hidden"); box.innerHTML = ""; return; }
-  let total = 0, lines = "";
-  for (const it of selServices.values()){
-    total += it.price;
+  let total = 0, totalMins = 0, lines = "";
+  for (const [id, entry] of selServices){
+    const it = entry.it, qty = entry.qty;
+    total += it.price * qty; totalMins += (Number(it.mins) || 60) * qty;
     lines += "<div class='ss-line'><span>" + it.name +
       (it.nameEs ? "<small>" + it.nameEs + "</small>" : "") +
-      "</span><span>" + money(it.price) + "</span></div>";
+      "<span class='qty'><button type='button' class='qbtn' data-dec='" + id + "'>−</button>" +
+      "<span class='qnum'>" + qty + "</span>" +
+      "<button type='button' class='qbtn' data-inc='" + id + "'>+</button></span>" +
+      "</span><span>" + money(it.price * qty) + "</span></div>";
   }
   box.innerHTML = "<div class='ss-head'>Your services · Tus servicios</div>" + lines +
+    "<div class='ss-line'><span>Time · Tiempo<small>Estimated · Estimado</small></span><span>≈ " + fmtMins(totalMins) + "</span></div>" +
     "<div class='ss-total'><span>Total</span><span>" + money(total) + "</span></div>";
   box.classList.remove("hidden");
   box.classList.add("selsum");
+  box.querySelectorAll("[data-inc]").forEach((btn) => { btn.onclick = () => { const e = selServices.get(btn.dataset.inc); if (e && e.qty < 6) e.qty++; renderSummary(); }; });
+  box.querySelectorAll("[data-dec]").forEach((btn) => { btn.onclick = () => { const id = btn.dataset.dec; const e = selServices.get(id); if (!e) return; e.qty--; if (e.qty <= 0){ selServices.delete(id); const sb = document.querySelector(".svc[data-id='" + id + "']"); if (sb) sb.classList.remove("sel"); } renderSummary(); validate(); }; });
 }
 
 function validate(){
@@ -378,7 +392,7 @@ $("bookBtn").onclick = async () => {
     const r = await fetch("/api/bookings", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        serviceIds: [...selServices.keys()],
+        serviceIds: [...selServices.values()].flatMap((e) => Array(e.qty).fill(e.it.id)),
         customer: { name: $("name").value, phone: $("phone").value },
         date: $("date").value, time: selTime, notes: $("notes").value
       })

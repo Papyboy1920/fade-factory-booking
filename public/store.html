@@ -47,7 +47,7 @@
   .row{display:flex; gap:8px; align-items:center;}
   .row > *{flex:1;}
   .itemrow{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-  .itemrow .nm{flex:3;} .itemrow .pr{flex:1;} 
+  .itemrow .nm{flex:3;} .itemrow .pr{flex:1;} .itemrow .mn{flex:0 0 78px;} 
   .itemrow input[type="checkbox"]{width:20px; height:20px; flex:none;}
   .deptname{color:var(--gold); letter-spacing:2px; font-size:13px; margin:16px 0 8px; text-transform:uppercase;}
   .bigbtn{width:100%; background:var(--gold2); color:#fff; border:none; border-radius:9px; padding:13px;
@@ -200,7 +200,7 @@ function renderBookings(){
       "<div class='top'><span class='num'>" + b.number + "</span>" +
       "<span class='badge st-" + b.status + "'>" + STATUS_LABEL[b.status] + "</span></div>" +
       svcHtml +
-      "<div class='meta'>" + fmtDate(b.date) + " at " + b.time + "<br>" +
+      "<div class='meta'>" + fmtDate(b.date) + " at " + b.time + (b.mins ? " · ⏱ " + b.mins + " min" : "") + "<br>" +
       b.customer.name + " · <a href='tel:" + b.customer.phone + "' style='color:var(--gold)'>" + b.customer.phone + "</a></div>" +
       (b.notes ? "<div class='notes'>“" + b.notes + "”</div>" : "") +
       "<div class='actions'>" +
@@ -263,11 +263,13 @@ function renderCatalog(){
         row.innerHTML =
           "<input type='checkbox' " + (it.active ? "checked" : "") + " title='Active'>" +
           "<input type='text' class='nm' value='" + it.name.replace(/'/g, "&#39;") + "'>" +
-          "<input type='number' class='pr' value='" + it.price + "' min='0' step='1'>";
-        const [chk, nm, pr] = row.querySelectorAll("input");
+          "<input type='number' class='pr' value='" + it.price + "' min='0' step='1' title='Price $'>" +
+          "<input type='number' class='mn' value='" + (it.mins || 60) + "' min='5' step='5' title='Duration (minutes)'>";
+        const [chk, nm, pr, mn] = row.querySelectorAll("input");
         chk.onchange = () => { catalog.departments[di].categories[ci].items[ii].active = chk.checked; };
         nm.onchange = () => { catalog.departments[di].categories[ci].items[ii].name = nm.value; };
         pr.onchange = () => { catalog.departments[di].categories[ci].items[ii].price = Number(pr.value); };
+        mn.onchange = () => { catalog.departments[di].categories[ci].items[ii].mins = Number(mn.value) || 60; };
         box.appendChild(row);
       });
     });
