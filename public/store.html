@@ -81,9 +81,10 @@
       <img src="/img/logo.png" alt="logo" style="border-radius:50%;">
       <div>
         <h1>FADE FACTORY</h1>
-        <small>BOOKINGS BACK OFFICE · SOUTH DADE TECHNICAL COLLEGE</small>
+        <small>BOOKINGS BACK OFFICE · CUTLER BAY, FL</small>
       </div>
-      <div class="live" id="liveBox">connecting…</div>
+      <button id="soundBtn" title="New-booking sound" style="margin-left:auto; background:none; border:1px solid var(--line); color:var(--txt); border-radius:16px; padding:6px 12px; font-size:12px; cursor:pointer;">🔔 Sound on</button>
+      <div class="live" id="liveBox" style="margin-left:10px;">connecting…</div>
     </header>
 
     <div class="tabs">
@@ -142,12 +143,9 @@
   </div>
 </div>
 
-<audio id="ding" preload="auto">
-  <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==" type="audio/wav">
-</audio>
 
 <script>
-let KEY = localStorage.getItem("er_store_key") || "";
+let KEY = localStorage.getItem("ff_store_key") || localStorage.getItem("er_store_key") || "";
 let bookings = [], catalog = null, settings = null;
 const $ = (id) => document.getElementById(id);
 const money = (n) => "$" + (Number.isInteger(n) ? n : Number(n).toFixed(2));
@@ -164,7 +162,7 @@ async function enter(){
   try {
     const r = await api("/api/bookings");
     if (!r.ok) throw new Error("Wrong key.");
-    localStorage.setItem("er_store_key", KEY);
+    localStorage.setItem("ff_store_key", KEY);
     $("gate").classList.add("hidden");
     $("app").classList.remove("hidden");
     await refreshAll();
@@ -356,11 +354,35 @@ document.querySelectorAll(".tab").forEach(t => {
 
 // ---------- Live events ----------
 function connectSSE(){
+  // ---- New-booking cha-ching (WebAudio, no file needed) ----
+  let actx = null;
+  let soundOn = localStorage.getItem("ff_sound") !== "0";
+  const sBtn = $("soundBtn");
+  const paintSound = () => { sBtn.textContent = soundOn ? "🔔 Sound on" : "🔕 Sound off"; };
+  paintSound();
+  function ensureAudio(){ try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) {} }
+  document.addEventListener("pointerdown", ensureAudio);
+  function playChing(){
+    if (!soundOn) return;
+    ensureAudio(); if (!actx) return;
+    const t = actx.currentTime;
+    [[1567.98, 0], [2093.0, 0.09], [2637.0, 0.18]].forEach(([f, dt]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + dt);
+      g.gain.exponentialRampToValueAtTime(0.22, t + dt + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.45);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t + dt); o.stop(t + dt + 0.5);
+    });
+  }
+  sBtn.onclick = () => { soundOn = !soundOn; localStorage.setItem("ff_sound", soundOn ? "1" : "0"); paintSound(); if (soundOn) playChing(); };
+
   const es = new EventSource("/api/events?key=" + encodeURIComponent(KEY));
   es.addEventListener("connected", () => { $("liveBox").innerHTML = "<b>●</b> live"; });
   const onChange = async () => { await refreshAll(); };
   es.addEventListener("new-booking", async () => {
-    try { $("ding").play().catch(() => {}); } catch (e) {}
+    playChing();
     await onChange();
   });
   es.addEventListener("booking-status", onChange);
