@@ -47,7 +47,9 @@
   .row{display:flex; gap:8px; align-items:center;}
   .row > *{flex:1;}
   .itemrow{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-  .itemrow .nm{flex:3;} .itemrow .pr{flex:1;} .itemrow .mn{flex:0 0 78px;} 
+  .itemrow .nm{flex:3;} .itemrow .pr{flex:1;} .itemrow .mn{flex:0 0 78px;}
+  .itemrow .del{flex:none; width:34px; height:38px; border-radius:8px; border:1px solid #5a2b30; background:#241014; color:#e58a93; font-size:15px; cursor:pointer;}
+  .addsvc{margin:2px 0 14px; background:none; border:1px dashed var(--gold2); color:var(--gold); border-radius:9px; padding:9px 14px; font-family:inherit; font-size:14px; letter-spacing:1px; cursor:pointer; width:100%;} 
   .itemrow input[type="checkbox"]{width:20px; height:20px; flex:none;}
   .deptname{color:var(--gold); letter-spacing:2px; font-size:13px; margin:16px 0 8px; text-transform:uppercase;}
   .bigbtn{width:100%; background:var(--gold2); color:#fff; border:none; border-radius:9px; padding:13px;
@@ -270,9 +272,31 @@ function renderCatalog(){
         nm.onchange = () => { catalog.departments[di].categories[ci].items[ii].name = nm.value; };
         pr.onchange = () => { catalog.departments[di].categories[ci].items[ii].price = Number(pr.value); };
         mn.onchange = () => { catalog.departments[di].categories[ci].items[ii].mins = Number(mn.value) || 60; };
+        const del = document.createElement("button");
+        del.type = "button"; del.className = "del"; del.textContent = "✕"; del.title = "Delete service";
+        del.onclick = () => {
+          if (!confirm("Delete '" + it.name + "' from the menu?")) return;
+          catalog.departments[di].categories[ci].items.splice(ii, 1);
+          renderCatalog();
+          $("catMsg").textContent = "Deleted — tap SAVE SERVICES to make it stick.";
+          $("catMsg").className = "msg okmsg";
+        };
+        row.appendChild(del);
         box.appendChild(row);
       });
     });
+    const add = document.createElement("button");
+    add.type = "button"; add.className = "addsvc"; add.textContent = "＋ ADD SERVICE";
+    add.onclick = () => {
+      catalog.departments[di].categories[0].items.push({
+        id: "custom-" + Date.now(), name: "New service", nameEs: "",
+        price: 0, mins: 30, unit: "service", desc: "", img: "", active: true
+      });
+      renderCatalog();
+      $("catMsg").textContent = "New service added below — name it, price it, then SAVE SERVICES.";
+      $("catMsg").className = "msg okmsg";
+    };
+    box.appendChild(add);
   });
 }
 $("saveCatalog").onclick = async () => {
