@@ -179,7 +179,7 @@ async function getSettings() {
     // Migración de horario: se imponen los bloques vigentes (SEED_SETTINGS);
     // días abiertos y cupo guardados se respetan. Al guardar desde /store
     // la versión queda estampada y manda lo guardado.
-    return { ...s, slots: [...SEED_SETTINGS.slots], version: SETTINGS_VERSION };
+    return { ...s, slots: [...SEED_SETTINGS.slots], daySlots: { ...(SEED_SETTINGS.daySlots || {}) }, version: SETTINGS_VERSION };
   }
   return s;
 }

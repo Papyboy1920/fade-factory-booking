@@ -87,18 +87,27 @@ app.put("/api/catalog", requireStore, async (req, res) => {
 
 app.get("/api/settings", async (req, res) => {
   const s = await db.getSettings();
-  res.json({ openDays: s.openDays, slots: s.slots, capacity: s.capacity });
+  res.json({ openDays: s.openDays, slots: s.slots, capacity: s.capacity, daySlots: s.daySlots || {} });
 });
 
 app.put("/api/settings", requireStore, async (req, res) => {
-  const { openDays, slots, capacity } = req.body || {};
+  const { openDays, slots, capacity, daySlots } = req.body || {};
   if (!Array.isArray(openDays) || !Array.isArray(slots) || !slots.length || !(Number(capacity) > 0)) {
     return res.status(400).json({ error: "Invalid settings." });
+  }
+  const cleanDaySlots = {};
+  if (daySlots && typeof daySlots === "object") {
+    for (const k of Object.keys(daySlots)) {
+      if (!/^[0-6]$/.test(k) || !Array.isArray(daySlots[k])) continue;
+      const arr = daySlots[k].map((s) => String(s).trim().slice(0, 24)).filter(Boolean);
+      if (arr.length) cleanDaySlots[k] = arr;
+    }
   }
   const clean = {
     openDays: openDays.map(Number).filter((d) => d >= 0 && d <= 6),
     slots: slots.map((s) => String(s).trim().slice(0, 24)).filter(Boolean),
     capacity: Math.min(20, Math.max(1, Number(capacity))),
+    daySlots: cleanDaySlots,
     version: SETTINGS_VERSION
   };
   await db.setSettings(clean);
@@ -128,15 +137,19 @@ function bookingMins(b) {
   }
   return 60;
 }
-async function slotUsage(date, settings) {
+function slotsFor(settings, dow) {
+  const ds = settings.daySlots && settings.daySlots[String(dow)];
+  return Array.isArray(ds) && ds.length ? ds : settings.slots;
+}
+async function slotUsage(date, settings, daySlots) {
   const usage = {};
-  for (const s of settings.slots) usage[s] = 0;
+  for (const s of daySlots) usage[s] = 0;
   const day = await db.listActiveForDate(date);
   for (const b of day) {
     const start = toMin(b.time);
     if (start == null) continue;
     const dur = bookingMins(b);
-    for (const s of settings.slots) {
+    for (const s of daySlots) {
       const x = toMin(s);
       if (x != null && x >= start && x < start + dur) usage[s]++;
     }
@@ -154,8 +167,9 @@ app.get("/api/availability", async (req, res) => {
   if (!settings.openDays.includes(dow)) {
     return res.json({ date, open: false, slots: [] });
   }
-  const usage = await slotUsage(date, settings);
-  const slots = settings.slots.map((time) => ({
+  const daySlots = slotsFor(settings, dow);
+  const usage = await slotUsage(date, settings, daySlots);
+  const slots = daySlots.map((time) => ({
     time, used: usage[time] || 0, left: Math.max(0, settings.capacity - (usage[time] || 0))
   }));
   res.json({ date, open: true, slots });
@@ -191,7 +205,7 @@ app.post("/api/bookings", async (req, res) => {
   if (!settings.openDays.includes(dow)) {
     return res.status(400).json({ error: "We are closed that day. Please pick another date." });
   }
-  if (!settings.slots.includes(time)) {
+  if (!slotsFor(settings, dow).includes(time)) {
     return res.status(400).json({ error: "Please pick one of the available times." });
   }
   const catalog = await db.getCatalog();
@@ -210,8 +224,9 @@ app.post("/api/bookings", async (req, res) => {
   const total = Math.round(snapshots.reduce((s, x) => s + x.price, 0) * 100) / 100;
   const totalMins = snapshots.reduce((s, x) => s + x.mins, 0);
   const startMin = toMin(time);
-  const usage = await slotUsage(date, settings);
-  const blocked = settings.slots.some((s) => {
+  const daySlots = slotsFor(settings, dow);
+  const usage = await slotUsage(date, settings, daySlots);
+  const blocked = daySlots.some((s) => {
     const x = toMin(s);
     return x != null && startMin != null && x >= startMin && x < startMin + totalMins &&
       (usage[s] || 0) >= settings.capacity;
