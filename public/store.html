@@ -131,6 +131,8 @@
         <div class="days" id="dayPicker"></div>
         <label>Time blocks — one per line (Bloques de horario — uno por línea)</label>
         <textarea id="slotText" rows="8" placeholder="9:00 AM&#10;10:00 AM&#10;11:00 AM&#10;12:00 PM&#10;1:00 PM&#10;2:00 PM&#10;3:00 PM&#10;4:00 PM&#10;5:00 PM&#10;6:00 PM"></textarea>
+        <label>Sunday time blocks — one per line (Domingos — vacío = igual que arriba)</label>
+        <textarea id="sunSlotText" rows="6" placeholder="8:30 AM&#10;9:00 AM&#10;9:30 AM&#10;10:00 AM&#10;10:30 AM&#10;11:00 AM&#10;11:30 AM&#10;12:00 PM&#10;12:30 PM&#10;1:00 PM&#10;1:30 PM&#10;2:00 PM&#10;2:30 PM&#10;3:00 PM&#10;3:30 PM&#10;4:00 PM"></textarea>
         <label>Bookings per time block (Reservas por bloque)</label>
         <input type="number" id="capInput" min="1" max="20">
         <button class="bigbtn" id="saveSettings">SAVE SCHEDULE</button>
@@ -322,13 +324,18 @@ function renderSettings(){
     dp.appendChild(el);
   });
   $("slotText").value = settings.slots.join("\n");
+  $("sunSlotText").value = (settings.daySlots && settings.daySlots["0"]) ? settings.daySlots["0"].join("\n") : "";
   $("capInput").value = settings.capacity;
 }
 $("saveSettings").onclick = async () => {
+  const sunSlots = $("sunSlotText").value.split("\n").map(s => s.trim()).filter(Boolean);
+  const daySlots = { ...(settings.daySlots || {}) };
+  if (sunSlots.length) daySlots["0"] = sunSlots; else delete daySlots["0"];
   const body = {
     openDays: settings.openDays,
     slots: $("slotText").value.split("\n").map(s => s.trim()).filter(Boolean),
-    capacity: Number($("capInput").value)
+    capacity: Number($("capInput").value),
+    daySlots
   };
   const r = await api("/api/settings", { method: "PUT", headers: H(), body: JSON.stringify(body) });
   const data = await r.json().catch(() => ({}));
